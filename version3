@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard - Analyse Temps Réel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --neutral: #6b7280;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --card-bg: #ffffff;
+            --border: #e5e7eb;
+            --sidebar-bg: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--sidebar-bg);
+            padding: 30px 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-explanation {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .score-title {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .score-value {
+            font-weight: 600;
+        }
+
+        .score-high { color: #10b981; }
+        .score-medium { color: #f59e0b; }
+        .score-low { color: #94a3b8; }
+
+        /* Main Content */
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .time-display {
+            display: inline-block;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* Priority Lists */
+        .priority-lists {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .priority-lists {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .priority-list {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid;
+        }
+
+        .short-header {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .long-header {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .list-title {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .short-title {
+            color: #ef4444;
+        }
+
+        .long-title {
+            color: #10b981;
+        }
+
+        .list-count {
+            font-size: 14px;
+            color: #94a3b8;
+            background: rgba(148, 163, 184, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        /* Priority Items */
+        .priority-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .priority-item {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .priority-item:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .rank {
+            font-size: 32px;
+            font-weight: 800;
+            width: 60px;
+            text-align: center;
+        }
+
+        .rank-1 { color: #fbbf24; }
+        .rank-2 { color: #94a3b8; }
+        .rank-3 { color: #b45309; }
+        .rank-4, .rank-5 { color: #64748b; }
+
+        .asset-info {
+            flex: 1;
+        }
+
+        .asset-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .asset-symbol {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .asset-name {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .asset-price {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'SF Mono', Monaco, monospace;
+            margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .asset-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .change-positive {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .change-negative {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .technical-score {
+            text-align: right;
+        }
+
+        .score-display {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-100, .score-95, .score-90 { color: #10b981; }
+        .score-85, .score-80 { color: #34d399; }
+        .score-75, .score-70 { color: #f59e0b; }
+        .score-65, .score-60 { color: #f59e0b; }
+        .score-55, .score-50 { color: #ef4444; }
+
+        .category-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-indices { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .tag-actions { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .tag-futures { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .tag-forex { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .tag-crypto { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+
+        .signal-details {
+            grid-column: 1 / -1;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .detail-label {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .tp-value {
+            color: #10b981;
+        }
+
+        .sl-value {
+            color: #ef4444;
+        }
+
+        /* Summary */
+        .summary-section {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .summary-card h4 {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-buy { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge-sell { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .badge-hold { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+
+        /* News Section */
+        .news-section {
+            margin-top: 40px;
+        }
+
+        .news-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .news-item {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .news-item:hover {
+            background: rgba(30, 41, 59, 0.8);
+            transform: translateX(5px);
+        }
+
+        .news-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #e2e8f0;
+        }
+
+        .news-time {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #64748b;
+            font-size: 14px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            margin-top: 40px;
+        }
+
+        /* Animation for price changes */
+        @keyframes priceUp {
+            0% { background-color: rgba(16, 185, 129, 0); }
+            50% { background-color: rgba(16, 185, 129, 0.3); }
+            100% { background-color: rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes priceDown {
+            0% { background-color: rgba(239, 68, 68, 0); }
+            50% { background-color: rgba(239, 68, 68, 0.3); }
+            100% { background-color: rgba(239, 68, 68, 0); }
+        }
+
+        .price-up {
+            animation: priceUp 1s ease;
+        }
+
+        .price-down {
+            animation: priceDown 1s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .priority-item {
+                grid-template-columns: 1fr;
+            }
+            
+            .technical-score {
+                text-align: left;
+            }
+            
+            .connection-status {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>TRADING LIVE</h1>
+            </div>
+            
+            <div class="score-explanation">
+                <div class="score-title">Système de Scoring</div>
+                <div class="score-item">
+                    <span>90-100:</span>
+                    <span class="score-value score-high">Signal Fort</span>
+                </div>
+                <div class="score-item">
+                    <span>70-89:</span>
+                    <span class="score-value score-medium">Signal Moyen</span>
+                </div>
+                <div class="score-item">
+                    <span>50-69:</span>
+                    <span class="score-value score-low">Signal Faible</span>
+                </div>
+                <div class="score-item">
+                    <span>0-49:</span>
+                    <span class="score-value">À éviter</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; font-size: 12px; color: #64748b; line-height: 1.6;">
+                <p><strong>Critères de scoring:</strong></p>
+                <ul style="margin-left: 15px; margin-top: 10px;">
+                    <li>Tendance technique (40%)</li>
+                    <li>Momentum RSI (30%)</li>
+                    <li>Alignement EMA (20%)</li>
+                    <li>Volume/Volatilité (10%)</li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 40px; font-size: 12px; color: #94a3b8;">
+                <p><i class="fas fa-sync-alt"></i> <strong>Actualisation:</strong> 5 secondes</p>
+                <p><i class="fas fa-database"></i> <strong>Données:</strong> Simulation temps réel</p>
+                <p><i class="fas fa-clock"></i> <strong>Dernière mise à jour:</strong> <span id="last-update">-</span></p>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>DASHBOARD TRADING TEMPS RÉEL</h1>
+                <div class="header-subtitle">Analyse technique en direct - Classement par conviction</div>
+                <div class="time-display">
+                    <i class="far fa-clock"></i>
+                    <span id="current-time">Chargement...</span>
+                </div>
+            </div>
+            
+            <!-- Priority Lists -->
+            <div class="priority-lists">
+                <!-- SHORT Priority List -->
+                <div class="priority-list">
+                    <div class="list-header short-header">
+                        <div class="list-title short-title">
+                            <i class="fas fa-arrow-down"></i>
+                            TOP SHORT
+                        </div>
+                        <div class="list-count" id="short-count">7 actifs</div>
+                    </div>
+                    
+                    <div class="priority-items" id="short-list">
+                        <!-- Les éléments SHORT seront générés dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- LONG Priority List -->
+                <div class="priority-list">
+                    <div class="list-header long-header">
+                        <div class="list-title long-title">
+                            <i class="fas fa-arrow-up"></i>
+                            TOP LONG
+                        </div>
+                        <div class="list-count" id="long-count">9 actifs</div>
+                    </div>
+                    
+                    <div class="priority-items" id="long-list">
+                        <!-- Les éléments LONG seront générés dynamiquement -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Statistiques Globales
+                </div>
+                
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h4>Distribution des Signaux</h4>
+                        <div class="summary-stats">
+                            <div class="stat-badge badge-buy" id="buy-count">0 BUY</div>
+                            <div class="stat-badge badge-sell" id="sell-count">0 SELL</div>
+                            <div class="stat-badge badge-hold" id="hold-count">0 HOLD</div>
+                        </div>
+                        <div style="margin-top: 15px; font-size: 14px; color: #94a3b8;">
+                            Score moyen: <strong id="avg-score" style="color: #f59e0b;">0.0</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <h4>Meilleur Score</h4>
+                        <div class="summary-value" id="best-score">0</div>
+                        <div style="font-size: 14px; color: #94a3b8;" id="best-asset">-</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <h4>Pire Score</h4>
+                        <div class="summary-value" id="worst-score" style="color: #ef4444;">0</div>
+                        <div style="font-size: 14px; color: #94a3b8;" id="worst-asset">-</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <h4>Ratio Risk/Reward</h4>
+                        <div class="summary-value" id="risk-reward" style="color: #10b981;">1:0.0</div>
+                        <div style="font-size: 14px; color: #94a3b8;">Moyenne recommandée</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- News Section -->
+            <div class="summary-section news-section">
+                <div class="summary-title">
+                    <i class="fas fa-newspaper"></i>
+                    Actualités Financières
+                </div>
+                <div class="news-feed" id="news-feed">
+                    <!-- Les actualités seront chargées ici -->
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>© 2024 Trading Dashboard - Analyse multi-timeframe M15 à H4</p>
+                <p style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
+                    Données simulées pour démonstration - Scoring basé sur: Tendance + Momentum + Structure + Volatilité
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div id="connection-status" class="connection-status status-connected">
+        <i class="fas fa-circle"></i>
+        <span>Connecté en temps réel</span>
+    </div>
+
+    <script>
+        // Données initiales des actifs
+        const initialAssets = [
+            // Indices
+            { symbol: "CAC40", name: "CAC 40", price: 8114.74, change: -7.30, category: "indices", volatility: 1.2 },
+            { symbol: "DEU40", name: "DAX 40", price: 24028.15, change: 146.11, category: "indices", volatility: 1.5 },
+            { symbol: "SPX", name: "S&P 500", price: 6870.40, change: 13.28, category: "indices", volatility: 1.0 },
+            
+            // Actions
+            { symbol: "TTE", name: "TotalEnergies", price: 56.40, change: -0.78, category: "actions", volatility: 0.8 },
+            { symbol: "NDQ", name: "Nasdaq", price: 25692.05, change: 110.35, category: "actions", volatility: 1.3 },
+            { symbol: "GLE", name: "Société Générale", price: 61.54, change: -0.90, category: "actions", volatility: 1.1 },
+            { symbol: "ORA", name: "Orange", price: 13.74, change: -0.29, category: "actions", volatility: 0.7 },
+            
+            // Matières Premières
+            { symbol: "UKOIL", name: "Pétrole Brent", price: 63.87, change: 0.51, category: "futures", volatility: 2.0 },
+            { symbol: "USOIL", name: "Pétrole WTI", price: 60.13, change: 0.42, category: "futures", volatility: 1.9 },
+            { symbol: "GOLD", name: "Or", price: 4197.41, change: -10.47, category: "futures", volatility: 0.9 },
+            
+            // Forex
+            { symbol: "EURU", name: "EUR/USD", price: 1.16409, change: -0.00033, category: "forex", volatility: 0.5 },
+            { symbol: "GBPU", name: "GBP/USD", price: 1.33299, change: 0.00058, category: "forex", volatility: 0.6 },
+            { symbol: "USDJPY", name: "USD/JPY", price: 155.337, change: 0.285, category: "forex", volatility: 0.7 },
+            { symbol: "EURG", name: "EUR/GBP", price: 0.87286, change: -0.00074, category: "forex", volatility: 0.4 },
+            
+            // Crypto
+            { symbol: "ETHUSI", name: "Ethereum", price: 3034.8, change: -4.1, category: "crypto", volatility: 2.5 },
+            { symbol: "BTCUSI", name: "Bitcoin USD", price: 89365, change: 116, category: "crypto", volatility: 2.3 },
+            { symbol: "BTCEUF", name: "Bitcoin EUR", price: 76837, change: 85, category: "crypto", volatility: 2.4 }
+        ];
+
+        // Données des actualités
+        const financialNews = [
+            { title: "La Fed maintient ses taux, marché en attente", time: "Il y a 5 min", impact: "medium" },
+            { title: "Résultats trimestriels positifs pour les techs", time: "Il y a 12 min", impact: "high" },
+            { title: "Pétrole en hausse après réduction de production OPEP+", time: "Il y a 25 min", impact: "high" },
+            { title: "Bitcoin dépasse les 89,000$ - Nouveau record", time: "Il y a 35 min", impact: "high" },
+            { title: "Banque centrale européenne: politique inchangée", time: "Il y a 45 min", impact: "low" },
+            { title: "Tensions géopolitiques affectent les marchés asiatiques", time: "Il y a 1h", impact: "medium" },
+            { title: "Rapport emploi US meilleur que prévu", time: "Il y a 1h", impact: "high" },
+            { title: "Nouvelles régulations crypto en Europe", time: "Il y a 2h", impact: "medium" }
+        ];
+
+        // Stockage des données en temps réel
+        let assetsData = {};
+        let assetHistory = {};
+        let currentSignals = {};
+        let updateInterval;
+        let lastUpdateTime = Date.now();
+
+        // Initialiser l'application
+        function initApp() {
+            console.log("Initialisation du dashboard trading...");
+            
+            // Initialiser les données
+            initializeAssets();
+            
+            // Mettre à jour l'heure
+            updateTime();
+            
+            // Démarrer les mises à jour en temps réel
+            startRealTimeUpdates();
+            
+            // Charger les actualités
+            loadNews();
+            
+            // Initialiser l'affichage
+            generatePriorityLists();
+            updateStatistics();
+            
+            // Mettre à jour la barre de statut
+            updateConnectionStatus('connected');
+            
+            console.log("Dashboard prêt - Mises à jour temps réel activées");
+        }
+
+        // Initialiser les données des actifs
+        function initializeAssets() {
+            initialAssets.forEach(asset => {
+                const symbol = asset.symbol;
+                
+                // Initialiser les données
+                assetsData[symbol] = {
+                    ...asset,
+                    score: calculateInitialScore(asset),
+                    action: getInitialAction(asset),
+                    rsi: getRandomRSI(),
+                    macd: getRandomMACD(),
+                    trend: getRandomTrend(),
+                    volume: getRandomVolume(),
+                    lastUpdate: Date.now(),
+                    priceHistory: [asset.price]
+                };
+                
+                // Initialiser l'historique
+                assetHistory[symbol] = {
+                    prices: Array.from({length: 20}, (_, i) => {
+                        const basePrice = asset.price;
+                        const volatility = asset.volatility / 100;
+                        const randomFactor = 1 + (Math.random() - 0.5) * volatility * 2;
+                        return basePrice * randomFactor;
+                    }),
+                    changes: []
+                };
+                
+                // Calculer le signal initial
+                updateAssetSignal(symbol);
+            });
+        }
+
+        // Calculer le score initial
+        function calculateInitialScore(asset) {
+            let score = 50;
+            
+            // Facteur de volatilité
+            score += asset.volatility * 5;
+            
+            // Facteur de catégorie
+            const categoryBonus = {
+                crypto: 10,
+                indices: 5,
+                futures: 8,
+                actions: 3,
+                forex: 0
+            };
+            score += categoryBonus[asset.category] || 0;
+            
+            // Facteur de changement
+            if (Math.abs(asset.change) > 0) {
+                score += Math.sign(asset.change) * 5;
+            }
+            
+            // Randomisation légère
+            score += (Math.random() - 0.5) * 10;
+            
+            return Math.min(Math.max(Math.round(score), 0), 100);
+        }
+
+        // Obtenir l'action initiale
+        function getInitialAction(asset) {
+            const score = assetsData[asset.symbol]?.score || calculateInitialScore(asset);
+            
+            if (score >= 70) return "BUY";
+            if (score <= 40) return "SELL";
+            return "HOLD";
+        }
+
+        // Générer des indicateurs techniques aléatoires
+        function getRandomRSI() {
+            return Math.round(30 + Math.random() * 40);
+        }
+
+        function getRandomMACD() {
+            return (Math.random() - 0.5) * 0.1;
+        }
+
+        function getRandomTrend() {
+            const trends = ["BULLISH", "BEARISH", "SIDEWAYS"];
+            return trends[Math.floor(Math.random() * trends.length)];
+        }
+
+        function getRandomVolume() {
+            return Math.round(1000000 + Math.random() * 9000000);
+        }
+
+        // Mettre à jour le signal d'un actif
+        function updateAssetSignal(symbol) {
+            const asset = assetsData[symbol];
+            if (!asset) return;
+            
+            // Calculer le score basé sur les indicateurs
+            let score = asset.score;
+            
+            // Mettre à jour le RSI
+            const rsiChange = (Math.random() - 0.5) * 5;
+            asset.rsi = Math.min(Math.max(asset.rsi + rsiChange, 10), 90);
+            
+            // Mettre à jour le MACD
+            const macdChange = (Math.random() - 0.5) * 0.02;
+            asset.macd += macdChange;
+            
+            // Mettre à jour la tendance occasionnellement
+            if (Math.random() > 0.8) {
+                asset.trend = getRandomTrend();
+            }
+            
+            // Mettre à jour le volume
+            const volumeChange = (Math.random() - 0.5) * 0.3;
+            asset.volume *= (1 + volumeChange);
+            
+            // Facteurs de scoring
+            // RSI scoring
+            if (asset.rsi < 30) score += 15;
+            else if (asset.rsi > 70) score -= 15;
+            else if (asset.rsi > 50 && asset.rsi < 60) score += 5;
+            
+            // MACD scoring
+            if (asset.macd > 0.05) score += 10;
+            else if (asset.macd < -0.05) score -= 10;
+            
+            // Trend scoring
+            if (asset.trend === "BULLISH") score += 10;
+            else if (asset.trend === "BEARISH") score -= 10;
+            
+            // Randomisation légère
+            score += (Math.random() - 0.5) * 8;
+            
+            // Limiter le score
+            score = Math.min(Math.max(score, 0), 100);
+            
+            // Mettre à jour le score
+            asset.score = Math.round(score);
+            
+            // Déterminer l'action
+            if (score >= 70) asset.action = "BUY";
+            else if (score <= 40) asset.action = "SELL";
+            else asset.action = "HOLD";
+            
+            // Générer TP/SL basé sur la volatilité
+            const volatility = asset.volatility / 100;
+            const price = asset.price;
+            
+            if (asset.action === "BUY") {
+                asset.tp = (price * (1 + volatility * 2)).toFixed(2);
+                asset.sl = (price * (1 - volatility)).toFixed(2);
+            } else if (asset.action === "SELL") {
+                asset.tp = (price * (1 - volatility * 2)).toFixed(2);
+                asset.sl = (price * (1 + volatility)).toFixed(2);
+            } else {
+                asset.tp = "N/A";
+                asset.sl = "N/A";
+            }
+            
+            // Timeframe
+            const timeframes = ["M15", "M30", "H1", "H4", "D1"];
+            asset.timeframe = timeframes[Math.floor(Math.random() * timeframes.length)];
+            
+            // Reason
+            const reasons = {
+                BUY: [
+                    "Breakout haussier confirmé",
+                    "RSI oversold, rebond attendu",
+                    "Alignement des moyennes mobiles",
+                    "Volume d'achat important",
+                    "Support testé avec succès"
+                ],
+                SELL: [
+                    "RSI suracheté, correction attendue",
+                    "Résistance testée plusieurs fois",
+                    "Divergence baissière RSI",
+                    "Volume de vente dominant",
+                    "Tendance baissière confirmée"
+                ],
+                HOLD: [
+                    "Consolidation en cours",
+                    "Signal faible, attente confirm.",
+                    "Marché en range",
+                    "Données insuffisantes",
+                    "Attente breakout"
+                ]
+            };
+            
+            asset.reason = reasons[asset.action]?.[Math.floor(Math.random() * reasons[asset.action].length)] || "Analyse en cours";
+            
+            // Mettre à jour le timestamp
+            asset.lastUpdate = Date.now();
+            lastUpdateTime = Date.now();
+        }
+
+        // Mettre à jour les prix en temps réel
+        function updatePrices() {
+            Object.keys(assetsData).forEach(symbol => {
+                const asset = assetsData[symbol];
+                const volatility = asset.volatility / 100;
+                
+                // Générer un changement de prix aléatoire basé sur la volatilité
+                const randomChange = (Math.random() - 0.5) * volatility * asset.price * 2;
+                
+                // Appliquer le changement
+                const oldPrice = asset.price;
+                asset.price += randomChange;
+                
+                // Garder le prix positif
+                asset.price = Math.max(asset.price, 0.01);
+                
+                // Calculer le changement
+                asset.change = asset.price - oldPrice;
+                asset.changePercent = ((asset.change / oldPrice) * 100).toFixed(2);
+                
+                // Ajouter à l'historique
+                asset.priceHistory.push(asset.price);
+                if (asset.priceHistory.length > 50) {
+                    asset.priceHistory.shift();
+                }
+                
+                // Mettre à jour le signal
+                updateAssetSignal(symbol);
+            });
+        }
+
+        // Démarrer les mises à jour en temps réel
+        function startRealTimeUpdates() {
+            // Mettre à jour toutes les 3 secondes
+            updateInterval = setInterval(() => {
+                updatePrices();
+                generatePriorityLists();
+                updateStatistics();
+                updateNews();
+                updateLastUpdateTime();
+            }, 3000);
+            
+            // Animation de prix toutes les secondes pour certains actifs
+            setInterval(() => {
+                animateRandomPriceChanges();
+            }, 1000);
+        }
+
+        // Animer les changements de prix
+        function animateRandomPriceChanges() {
+            // Sélectionner 3-5 actifs aléatoires
+            const symbols = Object.keys(assetsData);
+            const randomSymbols = symbols
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3 + Math.floor(Math.random() * 3));
+            
+            randomSymbols.forEach(symbol => {
+                const asset = assetsData[symbol];
+                const element = document.querySelector(`[data-symbol="${symbol}"]`);
+                
+                if (element) {
+                    const priceElement = element.querySelector('.asset-price');
+                    const changeElement = element.querySelector('.asset-change');
+                    
+                    if (priceElement && changeElement) {
+                        // Animation visuelle
+                        if (asset.change > 0) {
+                            priceElement.classList.remove('price-down');
+                            priceElement.classList.add('price-up');
+                        } else if (asset.change < 0) {
+                            priceElement.classList.remove('price-up');
+                            priceElement.classList.add('price-down');
+                        }
+                        
+                        // Retirer l'animation après un délai
+                        setTimeout(() => {
+                            priceElement.classList.remove('price-up', 'price-down');
+                        }, 1000);
+                    }
+                }
+            });
+        }
+
+        // Générer les listes prioritaires
+        function generatePriorityLists() {
+            // Convertir en tableau
+            const assetsArray = Object.values(assetsData);
+            
+            // Séparer les SHORT et LONG
+            const shortAssets = assetsArray
+                .filter(a => a.action === "SELL")
+                .sort((a, b) => b.score - a.score);
+            
+            const longAssets = assetsArray
+                .filter(a => a.action === "BUY")
+                .sort((a, b) => b.score - a.score);
+            
+            // Mettre à jour les compteurs
+            document.getElementById('short-count').textContent = `${shortAssets.length} actifs`;
+            document.getElementById('long-count').textContent = `${longAssets.length} actifs`;
+            
+            // Générer la liste SHORT
+            const shortList = document.getElementById('short-list');
+            shortList.innerHTML = shortAssets.map((asset, index) => 
+                createPriorityItem(asset, index + 1, 'SHORT')
+            ).join('');
+            
+            // Générer la liste LONG
+            const longList = document.getElementById('long-list');
+            longList.innerHTML = longAssets.map((asset, index) => 
+                createPriorityItem(asset, index + 1, 'LONG')
+            ).join('');
+        }
+
+        // Créer un élément de priorité
+        function createPriorityItem(asset, rank, type) {
+            const changeClass = asset.change >= 0 ? 'change-positive' : 'change-negative';
+            const categoryClass = `tag-${asset.category}`;
+            const scoreClass = `score-${Math.floor(asset.score/10)*10}`;
+            const rankClass = `rank-${Math.min(rank, 5)}`;
+            
+            // Formater le prix selon le type d'actif
+            let formattedPrice;
+            if (asset.price > 1000) {
+                formattedPrice = Math.round(asset.price).toLocaleString('fr-FR');
+            } else if (asset.price < 10) {
+                formattedPrice = asset.price.toFixed(4);
+            } else {
+                formattedPrice = asset.price.toFixed(2);
+            }
+            
+            // Formater le changement
+            const changeSign = asset.change >= 0 ? '+' : '';
+            const changePercent = Math.abs(parseFloat(asset.changePercent)).toFixed(2);
+            
+            return `
+                <div class="priority-item" data-symbol="${asset.symbol}">
+                    <div class="rank ${rankClass}">#${rank}</div>
+                    
+                    <div class="asset-info">
+                        <div class="asset-header">
+                            <div class="asset-symbol">${asset.symbol}</div>
+                            <div class="asset-name">${asset.name}</div>
+                            <span class="category-tag ${categoryClass}">${asset.category}</span>
+                        </div>
+                        <div class="asset-price">${formattedPrice}</div>
+                        <div class="asset-change ${changeClass}">
+                            <i class="fas ${asset.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                            ${changeSign}${changePercent}%
+                        </div>
+                    </div>
+                    
+                    <div class="technical-score">
+                        <div class="score-display ${scoreClass}">
+                            ${asset.score}
+                        </div>
+                        <div class="score-label">Score technique</div>
+                    </div>
+                    
+                    <div class="signal-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Timeframe:</span>
+                            <span class="detail-value">${asset.timeframe}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">RSI (14):</span>
+                            <span class="detail-value">${asset.rsi}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Tendance:</span>
+                            <span class="detail-value">${asset.trend}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Take Profit:</span>
+                            <span class="detail-value tp-value">${asset.tp}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Stop Loss:</span>
+                            <span class="detail-value sl-value">${asset.sl}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Signal:</span>
+                            <span class="detail-value">${asset.reason}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Mettre à jour les statistiques
+        function updateStatistics() {
+            const assetsArray = Object.values(assetsData);
+            
+            // Compter les signaux
+            const buyCount = assetsArray.filter(a => a.action === "BUY").length;
+            const sellCount = assetsArray.filter(a => a.action === "SELL").length;
+            const holdCount = assetsArray.filter(a => a.action === "HOLD").length;
+            
+            document.getElementById('buy-count').textContent = `${buyCount} BUY`;
+            document.getElementById('sell-count').textContent = `${sellCount} SELL`;
+            document.getElementById('hold-count').textContent = `${holdCount} HOLD`;
+            
+            // Calculer le score moyen
+            const totalScore = assetsArray.reduce((sum, asset) => sum + asset.score, 0);
+            const avgScore = (totalScore / assetsArray.length).toFixed(1);
+            document.getElementById('avg-score').textContent = avgScore;
+            
+            // Trouver le meilleur et pire score
+            const bestAsset = assetsArray.reduce((best, current) => 
+                current.score > best.score ? current : best
+            );
+            
+            const worstAsset = assetsArray.reduce((worst, current) => 
+                current.score < worst.score ? current : worst
+            );
+            
+            document.getElementById('best-score').textContent = bestAsset.score;
+            document.getElementById('best-asset').textContent = `${bestAsset.name} (${bestAsset.symbol})`;
+            
+            document.getElementById('worst-score').textContent = worstAsset.score;
+            document.getElementById('worst-asset').textContent = `${worstAsset.name} (${worstAsset.symbol})`;
+            
+            // Mettre à jour la classe de couleur pour le pire score
+            const worstScoreElement = document.getElementById('worst-score');
+            if (worstAsset.score >= 70) {
+                worstScoreElement.style.color = '#10b981';
+            } else if (worstAsset.score >= 50) {
+                worstScoreElement.style.color = '#f59e0b';
+            } else {
+                worstScoreElement.style.color = '#ef4444';
+            }
+            
+            // Calculer le ratio risk/reward moyen
+            const assetsWithTP = assetsArray.filter(a => a.tp !== "N/A");
+            let totalRR = 0;
+            
+            if (assetsWithTP.length > 0) {
+                assetsWithTP.forEach(asset => {
+                    if (asset.action === "BUY") {
+                        const reward = parseFloat(asset.tp) - asset.price;
+                        const risk = asset.price - parseFloat(asset.sl);
+                        if (risk > 0) totalRR += reward / risk;
+                    } else if (asset.action === "SELL") {
+                        const reward = asset.price - parseFloat(asset.tp);
+                        const risk = parseFloat(asset.sl) - asset.price;
+                        if (risk > 0) totalRR += reward / risk;
+                    }
+                });
+                
+                const avgRR = (totalRR / assetsWithTP.length).toFixed(1);
+                document.getElementById('risk-reward').textContent = `1:${avgRR}`;
+            }
+        }
+
+        // Charger les actualités
+        function loadNews() {
+            const newsFeed = document.getElementById('news-feed');
+            
+            // Afficher les 5 dernières actualités
+            const recentNews = financialNews.slice(0, 5);
+            
+            newsFeed.innerHTML = recentNews.map(news => `
+                <div class="news-item" data-impact="${news.impact}">
+                    <div class="news-title">${news.title}</div>
+                    <div class="news-time">${news.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // Mettre à jour les actualités
+        function updateNews() {
+            // Occasionnellement ajouter une nouvelle actualité
+            if (Math.random() > 0.7) {
+                const newsFeed = document.getElementById('news-feed');
+                const newsItems = Array.from(newsFeed.children);
+                
+                // Retirer la plus ancienne
+                if (newsItems.length >= 5) {
+                    newsItems[newsItems.length - 1].remove();
+                }
+                
+                // Ajouter une nouvelle actualité
+                const newNews = financialNews[Math.floor(Math.random() * financialNews.length)];
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                newsItem.dataset.impact = newNews.impact;
+                newsItem.innerHTML = `
+                    <div class="news-title">${newNews.title}</div>
+                    <div class="news-time">Il y a ${Math.floor(Math.random() * 10) + 1} min</div>
+                `;
+                
+                newsFeed.insertBefore(newsItem, newsFeed.firstChild);
+            }
+        }
+
+        // Mettre à jour l'heure
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('current-time').textContent = 
+                `${dateString} - ${timeString}`;
+            
+            // Mettre à jour toutes les secondes
+            setTimeout(updateTime, 1000);
+        }
+
+        // Mettre à jour le temps de dernière mise à jour
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('last-update').textContent = timeString;
+        }
+
+        // Mettre à jour le statut de connexion
+        function updateConnectionStatus(status) {
+            const statusElement = document.getElementById('connection-status');
+            
+            if (status === 'connected') {
+                statusElement.className = 'connection-status status-connected';
+                statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Connecté en temps réel</span>';
+            } else {
+                statusElement.className = 'connection-status status-disconnected';
+                statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Mode simulation</span>';
+            }
+        }
+
+        // Gérer la visibilité de la page
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page cachée, ralentir les mises à jour
+                if (updateInterval) {
+                    clearInterval(updateInterval);
+                    updateInterval = null;
+                }
+                updateConnectionStatus('disconnected');
+            } else {
+                // Page visible, reprendre les mises à jour
+                if (!updateInterval) {
+                    startRealTimeUpdates();
+                }
+                updateConnectionStatus('connected');
+            }
+        });
+
+        // Initialiser l'application au chargement
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        // Exporter les fonctions pour la console (débogage)
+        window.tradingDashboard = {
+            getAssetData: (symbol) => assetsData[symbol],
+            getAllAssets: () => assetsData,
+            updatePrices: updatePrices,
+            forceUpdate: () => {
+                updatePrices();
+                generatePriorityLists();
+                updateStatistics();
+            }
+        };
+    </script>
+</body>
+</html>
