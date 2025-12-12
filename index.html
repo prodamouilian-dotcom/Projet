@@ -694,6 +694,7 @@
             gap: 15px;
             margin: 30px 0;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn {
@@ -708,16 +709,6 @@
             gap: 10px;
         }
 
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-        }
-
         .btn-secondary {
             background: rgba(30, 41, 59, 0.7);
             color: #cbd5e1;
@@ -727,6 +718,12 @@
         .btn-secondary:hover {
             background: #475569;
             transform: translateY(-2px);
+        }
+
+        .btn-secondary.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
         }
 
         /* Connection Status */
@@ -785,6 +782,24 @@
 
         .price-down {
             animation: priceDown 1s ease;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 10px;
+            height: 6px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1s linear;
         }
 
         /* Responsive */
@@ -887,9 +902,15 @@
             </div>
             
             <div style="margin-top: 40px; font-size: 12px; color: #94a3b8;">
-                <p><i class="fas fa-sync-alt"></i> <strong>Actualisation:</strong> 5 secondes</p>
+                <p><i class="fas fa-sync-alt"></i> <strong>Actualisation:</strong> 1 minute</p>
                 <p><i class="fas fa-database"></i> <strong>Données:</strong> API Temps Réel</p>
                 <p><i class="fas fa-clock"></i> <strong>Dernière mise à jour:</strong> <span id="last-update">-</span></p>
+                <p><i class="fas fa-hourglass-half"></i> <strong>Prochaine mise à jour:</strong> <span id="next-update">60s</span></p>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="progress-container" style="margin-top: 20px;">
+                <div class="progress-bar" id="update-progress"></div>
             </div>
         </div>
         
@@ -992,14 +1013,14 @@
                 
                 <!-- Controls -->
                 <div class="controls">
-                    <button class="btn btn-primary" onclick="updatePrices()">
-                        <i class="fas fa-sync-alt"></i> Actualiser les prix
-                    </button>
                     <button class="btn btn-secondary" onclick="toggleFreezeMode()" id="freeze-btn">
                         <i class="fas fa-pause"></i> Freeze Mode
                     </button>
                     <button class="btn btn-secondary" onclick="loadApiStatus()">
                         <i class="fas fa-satellite-dish"></i> Status APIs
+                    </button>
+                    <button class="btn btn-secondary" onclick="forceUpdate()" id="force-update-btn">
+                        <i class="fas fa-redo"></i> Mise à jour immédiate
                     </button>
                 </div>
                 
@@ -1054,7 +1075,7 @@
             <div class="footer">
                 <p>© 2024 Trading Dashboard - Système de scoring backtesté avec multi-timérisme</p>
                 <p style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
-                    Données en temps réel via API - Filtrage news/sentiment intégré
+                    Données en temps réel via API - Filtrage news/sentiment intégré - Actualisation automatique: 1 min
                 </p>
             </div>
         </div>
@@ -1165,9 +1186,12 @@
         let isFrozen = false;
         let freezeTime = null;
         let updateInterval = null;
+        let progressInterval = null;
         let currentProvider = 'twelveData';
         let apiLogs = [];
         let marketSentiment = 0.0;
+        let updateCountdown = 60; // 60 secondes = 1 minute
+        let progressWidth = 0;
 
         // ============================================
         // FONCTIONS D'INITIALISATION
@@ -1199,6 +1223,9 @@
             
             // Démarrer les mises à jour automatiques
             startAutoUpdates();
+            
+            // Démarrer la barre de progression
+            startProgressBar();
             
             // Mettre à jour le statut de connexion
             updateConnectionStatus('connected');
@@ -1258,6 +1285,84 @@
                 // Mettre à jour les détails du signal
                 updateAssetDetails(symbol);
             });
+        }
+
+        // ============================================
+        // GESTION DES MISES À JOUR AUTOMATIQUES
+        // ============================================
+
+        function startAutoUpdates() {
+            if (updateInterval) clearInterval(updateInterval);
+            
+            // Mise à jour toutes les 60 secondes (1 minute)
+            updateInterval = setInterval(() => {
+                if (!isFrozen) {
+                    performAutoUpdate();
+                }
+                
+                // Changer occasionnellement de provider
+                if (Math.random() > 0.8) {
+                    rotateProvider();
+                }
+                
+                // Mettre à jour les actualités et le sentiment
+                updateNews();
+                calculateMarketSentiment();
+            }, 60000); // 60000 ms = 1 minute
+        }
+
+        function performAutoUpdate() {
+            updatePrices();
+            updateLastUpdateTime();
+            resetProgressBar();
+            logApi('Système', 'Mise à jour automatique effectuée', 'info');
+        }
+
+        function startProgressBar() {
+            if (progressInterval) clearInterval(progressInterval);
+            
+            progressInterval = setInterval(() => {
+                if (!isFrozen) {
+                    updateCountdown--;
+                    
+                    // Mettre à jour l'affichage du compte à rebours
+                    document.getElementById('next-update').textContent = `${updateCountdown}s`;
+                    
+                    // Mettre à jour la barre de progression
+                    progressWidth = ((60 - updateCountdown) / 60) * 100;
+                    document.getElementById('update-progress').style.width = `${progressWidth}%`;
+                    
+                    // Réinitialiser le compte à rebours
+                    if (updateCountdown <= 0) {
+                        updateCountdown = 60;
+                    }
+                }
+            }, 1000); // Mise à jour chaque seconde
+        }
+
+        function resetProgressBar() {
+            updateCountdown = 60;
+            progressWidth = 0;
+            document.getElementById('next-update').textContent = `${updateCountdown}s`;
+            document.getElementById('update-progress').style.width = `${progressWidth}%`;
+        }
+
+        function forceUpdate() {
+            if (isFrozen) {
+                logApi('Système', 'Mode Freeze activé - Mise à jour forcée ignorée', 'warning');
+                return;
+            }
+            
+            const forceBtn = document.getElementById('force-update-btn');
+            forceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mise à jour...';
+            forceBtn.disabled = true;
+            
+            setTimeout(() => {
+                performAutoUpdate();
+                forceBtn.innerHTML = '<i class="fas fa-redo"></i> Mise à jour immédiate';
+                forceBtn.disabled = false;
+                logApi('Système', 'Mise à jour forcée effectuée', 'success');
+            }, 1000);
         }
 
         // ============================================
@@ -1585,30 +1690,6 @@
             // Mettre à jour l'affichage
             generatePriorityLists();
             updateStatistics();
-            updateLastUpdateTime();
-            
-            // Logger la mise à jour
-            API_CONFIG[currentProvider].requests++;
-            logApi('Mise à jour', 'Données actualisées avec scoring avancé', 'success');
-        }
-
-        function startAutoUpdates() {
-            if (updateInterval) clearInterval(updateInterval);
-            
-            updateInterval = setInterval(() => {
-                if (!isFrozen) {
-                    updatePrices();
-                }
-                
-                // Changer occasionnellement de provider
-                if (Math.random() > 0.8) {
-                    rotateProvider();
-                }
-                
-                // Mettre à jour les actualités et le sentiment
-                updateNews();
-                calculateMarketSentiment();
-            }, 5000); // Mise à jour toutes les 5 secondes
         }
 
         // ============================================
@@ -2131,11 +2212,11 @@
             if (isFrozen) {
                 freezeTime = new Date();
                 freezeBtn.innerHTML = '<i class="fas fa-play"></i> Unfreeze Mode';
-                freezeBtn.style.background = '#10b981';
+                freezeBtn.classList.add('active');
                 logApi('Système', 'Mode Freeze activé - Données figées', 'warning');
             } else {
                 freezeBtn.innerHTML = '<i class="fas fa-pause"></i> Freeze Mode';
-                freezeBtn.style.background = '';
+                freezeBtn.classList.remove('active');
                 logApi('Système', 'Mode Freeze désactivé', 'success');
             }
         }
@@ -2206,7 +2287,7 @@
         window.tradingDashboard = {
             getAssetData: (symbol) => assets[symbol],
             getAllAssets: () => assets,
-            updatePrices: updatePrices,
+            forceUpdate: forceUpdate,
             testApis: testAllApis,
             rotateKeys: rotateAllKeys,
             toggleFreeze: toggleFreezeMode,
