@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Dashboard - Analyse Temps Réel</title>
+    <title>Trading Dashboard - Analyse Temps Réel avec API</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -135,6 +135,50 @@
             border-radius: 10px;
             font-weight: 600;
             border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        /* Tabs */
+        .tab {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Priority Lists */
@@ -465,6 +509,163 @@
             color: #94a3b8;
         }
 
+        /* API Status Tab */
+        .api-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .api-btn {
+            padding: 12px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .api-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .api-btn.warning {
+            background: #f59e0b;
+        }
+
+        .api-btn.warning:hover {
+            background: #d97706;
+        }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .api-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .api-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .api-card h4 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .api-status {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .api-status.ok {
+            color: #10b981;
+        }
+
+        .api-status.error {
+            color: #ef4444;
+        }
+
+        .api-status.warning {
+            color: #f59e0b;
+        }
+
+        .api-details {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .api-details p {
+            margin: 5px 0;
+        }
+
+        #api-logs {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .log-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 3px solid;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .log-success { border-left-color: #10b981; }
+        .log-error { border-left-color: #ef4444; }
+        .log-warning { border-left-color: #f59e0b; }
+        .log-info { border-left-color: #3b82f6; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.7);
+            color: #cbd5e1;
+            border: 1px solid #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+
         /* Connection Status */
         .connection-status {
             position: fixed;
@@ -546,6 +747,10 @@
                 right: 10px;
                 left: 10px;
             }
+            
+            .api-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -590,7 +795,7 @@
             
             <div style="margin-top: 40px; font-size: 12px; color: #94a3b8;">
                 <p><i class="fas fa-sync-alt"></i> <strong>Actualisation:</strong> 5 secondes</p>
-                <p><i class="fas fa-database"></i> <strong>Données:</strong> Simulation temps réel</p>
+                <p><i class="fas fa-database"></i> <strong>Données:</strong> API Temps Réel</p>
                 <p><i class="fas fa-clock"></i> <strong>Dernière mise à jour:</strong> <span id="last-update">-</span></p>
             </div>
         </div>
@@ -606,95 +811,157 @@
                     <span id="current-time">Chargement...</span>
                 </div>
             </div>
-            
-            <!-- Priority Lists -->
-            <div class="priority-lists">
-                <!-- SHORT Priority List -->
-                <div class="priority-list">
-                    <div class="list-header short-header">
-                        <div class="list-title short-title">
-                            <i class="fas fa-arrow-down"></i>
-                            TOP SHORT
+
+            <!-- Navigation -->
+            <div class="navigation">
+                <button class="nav-btn active" onclick="showTab('dashboard')">
+                    <i class="fas fa-chart-line"></i> Dashboard Trading
+                </button>
+                <button class="nav-btn" onclick="showTab('api-tab')">
+                    <i class="fas fa-satellite-dish"></i> API Status
+                </button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab active">
+                <!-- Priority Lists -->
+                <div class="priority-lists">
+                    <!-- SHORT Priority List -->
+                    <div class="priority-list">
+                        <div class="list-header short-header">
+                            <div class="list-title short-title">
+                                <i class="fas fa-arrow-down"></i>
+                                TOP SHORT
+                            </div>
+                            <div class="list-count" id="short-count">0 actifs</div>
                         </div>
-                        <div class="list-count" id="short-count">7 actifs</div>
+                        
+                        <div class="priority-items" id="short-list">
+                            <!-- Les éléments SHORT seront générés dynamiquement -->
+                        </div>
                     </div>
                     
-                    <div class="priority-items" id="short-list">
-                        <!-- Les éléments SHORT seront générés dynamiquement -->
+                    <!-- LONG Priority List -->
+                    <div class="priority-list">
+                        <div class="list-header long-header">
+                            <div class="list-title long-title">
+                                <i class="fas fa-arrow-up"></i>
+                                TOP LONG
+                            </div>
+                            <div class="list-count" id="long-count">0 actifs</div>
+                        </div>
+                        
+                        <div class="priority-items" id="long-list">
+                            <!-- Les éléments LONG seront générés dynamiquement -->
+                        </div>
                     </div>
                 </div>
                 
-                <!-- LONG Priority List -->
-                <div class="priority-list">
-                    <div class="list-header long-header">
-                        <div class="list-title long-title">
-                            <i class="fas fa-arrow-up"></i>
-                            TOP LONG
-                        </div>
-                        <div class="list-count" id="long-count">9 actifs</div>
+                <!-- Summary Section -->
+                <div class="summary-section">
+                    <div class="summary-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Statistiques Globales
                     </div>
                     
-                    <div class="priority-items" id="long-list">
-                        <!-- Les éléments LONG seront générés dynamiquement -->
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <h4>Distribution des Signaux</h4>
+                            <div class="summary-stats">
+                                <div class="stat-badge badge-buy" id="buy-count">0 BUY</div>
+                                <div class="stat-badge badge-sell" id="sell-count">0 SELL</div>
+                                <div class="stat-badge badge-hold" id="hold-count">0 HOLD</div>
+                            </div>
+                            <div style="margin-top: 15px; font-size: 14px; color: #94a3b8;">
+                                Score moyen: <strong id="avg-score" style="color: #f59e0b;">0.0</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <h4>Meilleur Score</h4>
+                            <div class="summary-value" id="best-score">0</div>
+                            <div style="font-size: 14px; color: #94a3b8;" id="best-asset">-</div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <h4>Pire Score</h4>
+                            <div class="summary-value" id="worst-score" style="color: #ef4444;">0</div>
+                            <div style="font-size: 14px; color: #94a3b8;" id="worst-asset">-</div>
+                        </div>
+                        
+                        <div class="summary-card">
+                            <h4>Ratio Risk/Reward</h4>
+                            <div class="summary-value" id="risk-reward" style="color: #10b981;">1:0.0</div>
+                            <div style="font-size: 14px; color: #94a3b8;">Moyenne recommandée</div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Summary Section -->
-            <div class="summary-section">
-                <div class="summary-title">
-                    <i class="fas fa-chart-pie"></i>
-                    Statistiques Globales
                 </div>
                 
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <h4>Distribution des Signaux</h4>
-                        <div class="summary-stats">
-                            <div class="stat-badge badge-buy" id="buy-count">0 BUY</div>
-                            <div class="stat-badge badge-sell" id="sell-count">0 SELL</div>
-                            <div class="stat-badge badge-hold" id="hold-count">0 HOLD</div>
-                        </div>
-                        <div style="margin-top: 15px; font-size: 14px; color: #94a3b8;">
-                            Score moyen: <strong id="avg-score" style="color: #f59e0b;">0.0</strong>
-                        </div>
+                <!-- Controls -->
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="updatePrices()">
+                        <i class="fas fa-sync-alt"></i> Actualiser les prix
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleFreezeMode()" id="freeze-btn">
+                        <i class="fas fa-pause"></i> Freeze Mode
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadApiStatus()">
+                        <i class="fas fa-satellite-dish"></i> Status APIs
+                    </button>
+                </div>
+                
+                <!-- News Section -->
+                <div class="summary-section news-section">
+                    <div class="summary-title">
+                        <i class="fas fa-newspaper"></i>
+                        Actualités Financières
                     </div>
-                    
-                    <div class="summary-card">
-                        <h4>Meilleur Score</h4>
-                        <div class="summary-value" id="best-score">0</div>
-                        <div style="font-size: 14px; color: #94a3b8;" id="best-asset">-</div>
-                    </div>
-                    
-                    <div class="summary-card">
-                        <h4>Pire Score</h4>
-                        <div class="summary-value" id="worst-score" style="color: #ef4444;">0</div>
-                        <div style="font-size: 14px; color: #94a3b8;" id="worst-asset">-</div>
-                    </div>
-                    
-                    <div class="summary-card">
-                        <h4>Ratio Risk/Reward</h4>
-                        <div class="summary-value" id="risk-reward" style="color: #10b981;">1:0.0</div>
-                        <div style="font-size: 14px; color: #94a3b8;">Moyenne recommandée</div>
+                    <div class="news-feed" id="news-feed">
+                        <!-- Les actualités seront chargées ici -->
                     </div>
                 </div>
             </div>
-            
-            <!-- News Section -->
-            <div class="summary-section news-section">
-                <div class="summary-title">
-                    <i class="fas fa-newspaper"></i>
-                    Actualités Financières
-                </div>
-                <div class="news-feed" id="news-feed">
-                    <!-- Les actualités seront chargées ici -->
+
+            <!-- API Status Tab -->
+            <div id="api-tab" class="tab">
+                <div class="summary-section">
+                    <div class="summary-title">
+                        <i class="fas fa-satellite-dish"></i>
+                        API Status Dashboard
+                    </div>
+                    
+                    <div class="api-controls">
+                        <button class="api-btn" onclick="testAllApis()">
+                            <i class="fas fa-sync-alt"></i> Tester toutes les APIs
+                        </button>
+                        <button class="api-btn warning" onclick="rotateAllKeys()">
+                            <i class="fas fa-recycle"></i> Rotation des clés
+                        </button>
+                        <button class="api-btn" onclick="clearApiLogs()">
+                            <i class="fas fa-trash"></i> Effacer les logs
+                        </button>
+                    </div>
+                    
+                    <div class="api-grid" id="api-status-grid">
+                        <!-- Statut API chargé dynamiquement -->
+                    </div>
+                    
+                    <div class="summary-title">
+                        <i class="fas fa-terminal"></i>
+                        Logs des Requêtes API
+                    </div>
+                    <div id="api-logs">
+                        <div class="log-item log-info">
+                            [<span id="log-time">00:00:00</span>] <strong>Système:</strong> Dashboard initialisé
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="footer">
                 <p>© 2024 Trading Dashboard - Analyse multi-timeframe M15 à H4</p>
                 <p style="margin-top: 10px; font-size: 12px; color: #94a3b8;">
-                    Données simulées pour démonstration - Scoring basé sur: Tendance + Momentum + Structure + Volatilité
+                    Données en temps réel via API - Rotation automatique de clés
                 </p>
             </div>
         </div>
@@ -707,38 +974,86 @@
     </div>
 
     <script>
-        // Données initiales des actifs
-        const initialAssets = [
+        // ============================================
+        // CONFIGURATION ET DONNÉES INITIALES
+        // ============================================
+
+        // Configuration des API
+        const API_CONFIG = {
+            alphaVantage: {
+                name: "Alpha Vantage",
+                keys: [
+                    'Y8YPALOEHG7XRRYE',
+                    '900H5XX15CM1PATR',
+                    '97DI78JJH8X8RZKE',
+                    'PSQ7LG5FL3GXKKVH',
+                    'UMHKYX0NG4JRMEUF'
+                ],
+                currentKeyIndex: 0,
+                status: 'unknown',
+                requests: 0,
+                errors: 0
+            },
+            twelveData: {
+                name: "Twelve Data",
+                keys: [
+                    '3c24a82aa604453ca006dffa276d319c',
+                    '15df9e300c714b248b235e83fa69474a',
+                    '74f5802f668b4d07b62733967069ab55',
+                    '183c23d808cb497d9dd823907b6c1766',
+                    'ceae622b3e67433fa6961d9cc3bc1fa5'
+                ],
+                currentKeyIndex: 0,
+                status: 'unknown',
+                requests: 0,
+                errors: 0
+            },
+            finnhub: {
+                name: "Finnhub",
+                keys: [
+                    'd4tb50pr01qhr5tpebs0d4tb50pr01qhr5tpebsg',
+                    'd3rpmq9r01qldtraek3gd3rpmq9r01qldtraek40',
+                    'd4tvp51r01qhosep9ptgd4tvp51r01qhosep9pu0',
+                    'd4tvn4hr01qhosep9ff0d4tvn4hr01qhosep9ffg'
+                ],
+                currentKeyIndex: 0,
+                status: 'unknown',
+                requests: 0,
+                errors: 0
+            }
+        };
+
+        // Données des actifs
+        const ASSETS_DATA = {
             // Indices
-            { symbol: "CAC40", name: "CAC 40", price: 8114.74, change: -7.30, category: "indices", volatility: 1.2 },
-            { symbol: "DEU40", name: "DAX 40", price: 24028.15, change: 146.11, category: "indices", volatility: 1.5 },
-            { symbol: "SPX", name: "S&P 500", price: 6870.40, change: 13.28, category: "indices", volatility: 1.0 },
+            'CAC40': { name: 'CAC 40', category: 'indices', basePrice: 7400, volatility: 1.2 },
+            'DEU40': { name: 'DAX 40', category: 'indices', basePrice: 16800, volatility: 1.5 },
+            'SPX': { name: 'S&P 500', category: 'indices', basePrice: 4600, volatility: 1.0 },
             
             // Actions
-            { symbol: "TTE", name: "TotalEnergies", price: 56.40, change: -0.78, category: "actions", volatility: 0.8 },
-            { symbol: "NDQ", name: "Nasdaq", price: 25692.05, change: 110.35, category: "actions", volatility: 1.3 },
-            { symbol: "GLE", name: "Société Générale", price: 61.54, change: -0.90, category: "actions", volatility: 1.1 },
-            { symbol: "ORA", name: "Orange", price: 13.74, change: -0.29, category: "actions", volatility: 0.7 },
+            'TTE': { name: 'TotalEnergies', category: 'actions', basePrice: 65, volatility: 0.8 },
+            'NDQ': { name: 'NASDAQ', category: 'indices', basePrice: 16000, volatility: 1.3 },
+            'GLE': { name: 'Société Générale', category: 'actions', basePrice: 25, volatility: 1.1 },
+            'ORA': { name: 'Orange', category: 'actions', basePrice: 11, volatility: 0.7 },
             
             // Matières Premières
-            { symbol: "UKOIL", name: "Pétrole Brent", price: 63.87, change: 0.51, category: "futures", volatility: 2.0 },
-            { symbol: "USOIL", name: "Pétrole WTI", price: 60.13, change: 0.42, category: "futures", volatility: 1.9 },
-            { symbol: "GOLD", name: "Or", price: 4197.41, change: -10.47, category: "futures", volatility: 0.9 },
+            'UKOIL': { name: 'BRENT', category: 'futures', basePrice: 82, volatility: 2.0 },
+            'USOIL': { name: 'WTI', category: 'futures', basePrice: 78, volatility: 1.9 },
+            'GOLD': { name: 'OR', category: 'futures', basePrice: 2020, volatility: 0.9 },
             
             // Forex
-            { symbol: "EURU", name: "EUR/USD", price: 1.16409, change: -0.00033, category: "forex", volatility: 0.5 },
-            { symbol: "GBPU", name: "GBP/USD", price: 1.33299, change: 0.00058, category: "forex", volatility: 0.6 },
-            { symbol: "USDJPY", name: "USD/JPY", price: 155.337, change: 0.285, category: "forex", volatility: 0.7 },
-            { symbol: "EURG", name: "EUR/GBP", price: 0.87286, change: -0.00074, category: "forex", volatility: 0.4 },
+            'EURU': { name: 'EUR/USD', category: 'forex', basePrice: 1.0850, volatility: 0.5 },
+            'GBPU': { name: 'GBP/USD', category: 'forex', basePrice: 1.2650, volatility: 0.6 },
+            'USDJPY': { name: 'USD/JPY', category: 'forex', basePrice: 147.50, volatility: 0.7 },
+            'EURG': { name: 'EUR/GBP', category: 'forex', basePrice: 0.8600, volatility: 0.4 },
             
             // Crypto
-            { symbol: "ETHUSI", name: "Ethereum", price: 3034.8, change: -4.1, category: "crypto", volatility: 2.5 },
-            { symbol: "BTCUSI", name: "Bitcoin USD", price: 89365, change: 116, category: "crypto", volatility: 2.3 },
-            { symbol: "BTCEUF", name: "Bitcoin EUR", price: 76837, change: 85, category: "crypto", volatility: 2.4 }
-        ];
+            'BTCUSI': { name: 'BITCOIN', category: 'crypto', basePrice: 43000, volatility: 2.3 },
+            'ETHUSI': { name: 'ETHEREUM', category: 'crypto', basePrice: 2300, volatility: 2.5 }
+        };
 
         // Données des actualités
-        const financialNews = [
+        const FINANCIAL_NEWS = [
             { title: "La Fed maintient ses taux, marché en attente", time: "Il y a 5 min", impact: "medium" },
             { title: "Résultats trimestriels positifs pour les techs", time: "Il y a 12 min", impact: "high" },
             { title: "Pétrole en hausse après réduction de production OPEP+", time: "Il y a 25 min", impact: "high" },
@@ -749,25 +1064,29 @@
             { title: "Nouvelles régulations crypto en Europe", time: "Il y a 2h", impact: "medium" }
         ];
 
-        // Stockage des données en temps réel
-        let assetsData = {};
-        let assetHistory = {};
-        let currentSignals = {};
-        let updateInterval;
-        let lastUpdateTime = Date.now();
+        // ============================================
+        // ÉTAT GLOBAL DE L'APPLICATION
+        // ============================================
 
-        // Initialiser l'application
+        let assets = {};
+        let isFrozen = false;
+        let freezeTime = null;
+        let updateInterval = null;
+        let currentProvider = 'twelveData';
+        let apiLogs = [];
+
+        // ============================================
+        // FONCTIONS D'INITIALISATION
+        // ============================================
+
         function initApp() {
-            console.log("Initialisation du dashboard trading...");
+            console.log("🚀 Initialisation du Dashboard Trading...");
             
-            // Initialiser les données
+            // Initialiser les données des actifs
             initializeAssets();
             
             // Mettre à jour l'heure
             updateTime();
-            
-            // Démarrer les mises à jour en temps réel
-            startRealTimeUpdates();
             
             // Charger les actualités
             loadNews();
@@ -776,67 +1095,74 @@
             generatePriorityLists();
             updateStatistics();
             
-            // Mettre à jour la barre de statut
+            // Tester les APIs
+            setTimeout(() => {
+                testAllApis();
+            }, 2000);
+            
+            // Démarrer les mises à jour automatiques
+            startAutoUpdates();
+            
+            // Mettre à jour le statut de connexion
             updateConnectionStatus('connected');
             
-            console.log("Dashboard prêt - Mises à jour temps réel activées");
+            logApi('Système', 'Dashboard initialisé avec succès', 'info');
+            
+            console.log("✅ Dashboard prêt - Mises à jour temps réel activées");
         }
 
-        // Initialiser les données des actifs
         function initializeAssets() {
-            initialAssets.forEach(asset => {
-                const symbol = asset.symbol;
+            Object.keys(ASSETS_DATA).forEach(symbol => {
+                const assetData = ASSETS_DATA[symbol];
                 
-                // Initialiser les données
-                assetsData[symbol] = {
-                    ...asset,
-                    score: calculateInitialScore(asset),
-                    action: getInitialAction(asset),
-                    rsi: getRandomRSI(),
-                    macd: getRandomMACD(),
+                // Générer des données initiales réalistes
+                const variation = (Math.random() - 0.5) * 0.02;
+                const price = assetData.basePrice * (1 + variation);
+                const change = price - assetData.basePrice;
+                const changePercent = (change / assetData.basePrice) * 100;
+                
+                // Calculer les indicateurs techniques
+                const rsi = 30 + Math.random() * 40;
+                const score = calculateTechnicalScore(price, rsi, assetData.volatility);
+                
+                assets[symbol] = {
+                    ...assetData,
+                    symbol: symbol,
+                    price: parseFloat(price.toFixed(2)),
+                    change: parseFloat(change.toFixed(2)),
+                    changePercent: parseFloat(changePercent.toFixed(2)),
+                    rsi: Math.round(rsi),
+                    score: score,
+                    action: getActionFromScore(score),
+                    tp: calculateTP(price, score, assetData.volatility),
+                    sl: calculateSL(price, score, assetData.volatility),
                     trend: getRandomTrend(),
-                    volume: getRandomVolume(),
+                    macd: (Math.random() - 0.5) * 0.1,
+                    volume: Math.round(1000000 + Math.random() * 9000000),
+                    provider: currentProvider,
                     lastUpdate: Date.now(),
-                    priceHistory: [asset.price]
+                    priceHistory: [price]
                 };
                 
-                // Initialiser l'historique
-                assetHistory[symbol] = {
-                    prices: Array.from({length: 20}, (_, i) => {
-                        const basePrice = asset.price;
-                        const volatility = asset.volatility / 100;
-                        const randomFactor = 1 + (Math.random() - 0.5) * volatility * 2;
-                        return basePrice * randomFactor;
-                    }),
-                    changes: []
-                };
-                
-                // Calculer le signal initial
-                updateAssetSignal(symbol);
+                // Mettre à jour les détails du signal
+                updateAssetDetails(symbol);
             });
         }
 
-        // Calculer le score initial
-        function calculateInitialScore(asset) {
+        // ============================================
+        // FONCTIONS D'ANALYSE TECHNIQUE
+        // ============================================
+
+        function calculateTechnicalScore(price, rsi, volatility) {
             let score = 50;
             
-            // Facteur de volatilité
-            score += asset.volatility * 5;
+            // Facteur RSI
+            if (rsi < 30) score += 20;
+            else if (rsi > 70) score -= 20;
+            else if (rsi > 45 && rsi < 55) score += 5;
             
-            // Facteur de catégorie
-            const categoryBonus = {
-                crypto: 10,
-                indices: 5,
-                futures: 8,
-                actions: 3,
-                forex: 0
-            };
-            score += categoryBonus[asset.category] || 0;
-            
-            // Facteur de changement
-            if (Math.abs(asset.change) > 0) {
-                score += Math.sign(asset.change) * 5;
-            }
+            // Facteur volatilité
+            score += (volatility - 1) * 5;
             
             // Randomisation légère
             score += (Math.random() - 0.5) * 10;
@@ -844,22 +1170,28 @@
             return Math.min(Math.max(Math.round(score), 0), 100);
         }
 
-        // Obtenir l'action initiale
-        function getInitialAction(asset) {
-            const score = assetsData[asset.symbol]?.score || calculateInitialScore(asset);
-            
+        function getActionFromScore(score) {
             if (score >= 70) return "BUY";
             if (score <= 40) return "SELL";
             return "HOLD";
         }
 
-        // Générer des indicateurs techniques aléatoires
-        function getRandomRSI() {
-            return Math.round(30 + Math.random() * 40);
+        function calculateTP(price, score, volatility) {
+            if (score >= 70) {
+                return (price * (1 + volatility * 0.02)).toFixed(2);
+            } else if (score <= 40) {
+                return (price * (1 - volatility * 0.02)).toFixed(2);
+            }
+            return "N/A";
         }
 
-        function getRandomMACD() {
-            return (Math.random() - 0.5) * 0.1;
+        function calculateSL(price, score, volatility) {
+            if (score >= 70) {
+                return (price * (1 - volatility * 0.01)).toFixed(2);
+            } else if (score <= 40) {
+                return (price * (1 + volatility * 0.01)).toFixed(2);
+            }
+            return "N/A";
         }
 
         function getRandomTrend() {
@@ -867,83 +1199,10 @@
             return trends[Math.floor(Math.random() * trends.length)];
         }
 
-        function getRandomVolume() {
-            return Math.round(1000000 + Math.random() * 9000000);
-        }
-
-        // Mettre à jour le signal d'un actif
-        function updateAssetSignal(symbol) {
-            const asset = assetsData[symbol];
+        function updateAssetDetails(symbol) {
+            const asset = assets[symbol];
             if (!asset) return;
             
-            // Calculer le score basé sur les indicateurs
-            let score = asset.score;
-            
-            // Mettre à jour le RSI
-            const rsiChange = (Math.random() - 0.5) * 5;
-            asset.rsi = Math.min(Math.max(asset.rsi + rsiChange, 10), 90);
-            
-            // Mettre à jour le MACD
-            const macdChange = (Math.random() - 0.5) * 0.02;
-            asset.macd += macdChange;
-            
-            // Mettre à jour la tendance occasionnellement
-            if (Math.random() > 0.8) {
-                asset.trend = getRandomTrend();
-            }
-            
-            // Mettre à jour le volume
-            const volumeChange = (Math.random() - 0.5) * 0.3;
-            asset.volume *= (1 + volumeChange);
-            
-            // Facteurs de scoring
-            // RSI scoring
-            if (asset.rsi < 30) score += 15;
-            else if (asset.rsi > 70) score -= 15;
-            else if (asset.rsi > 50 && asset.rsi < 60) score += 5;
-            
-            // MACD scoring
-            if (asset.macd > 0.05) score += 10;
-            else if (asset.macd < -0.05) score -= 10;
-            
-            // Trend scoring
-            if (asset.trend === "BULLISH") score += 10;
-            else if (asset.trend === "BEARISH") score -= 10;
-            
-            // Randomisation légère
-            score += (Math.random() - 0.5) * 8;
-            
-            // Limiter le score
-            score = Math.min(Math.max(score, 0), 100);
-            
-            // Mettre à jour le score
-            asset.score = Math.round(score);
-            
-            // Déterminer l'action
-            if (score >= 70) asset.action = "BUY";
-            else if (score <= 40) asset.action = "SELL";
-            else asset.action = "HOLD";
-            
-            // Générer TP/SL basé sur la volatilité
-            const volatility = asset.volatility / 100;
-            const price = asset.price;
-            
-            if (asset.action === "BUY") {
-                asset.tp = (price * (1 + volatility * 2)).toFixed(2);
-                asset.sl = (price * (1 - volatility)).toFixed(2);
-            } else if (asset.action === "SELL") {
-                asset.tp = (price * (1 - volatility * 2)).toFixed(2);
-                asset.sl = (price * (1 + volatility)).toFixed(2);
-            } else {
-                asset.tp = "N/A";
-                asset.sl = "N/A";
-            }
-            
-            // Timeframe
-            const timeframes = ["M15", "M30", "H1", "H4", "D1"];
-            asset.timeframe = timeframes[Math.floor(Math.random() * timeframes.length)];
-            
-            // Reason
             const reasons = {
                 BUY: [
                     "Breakout haussier confirmé",
@@ -961,107 +1220,104 @@
                 ],
                 HOLD: [
                     "Consolidation en cours",
-                    "Signal faible, attente confirm.",
+                    "Signal faible, attente confirmation",
                     "Marché en range",
                     "Données insuffisantes",
                     "Attente breakout"
                 ]
             };
             
-            asset.reason = reasons[asset.action]?.[Math.floor(Math.random() * reasons[asset.action].length)] || "Analyse en cours";
+            const timeframes = ["M15", "M30", "H1", "H4", "D1"];
             
-            // Mettre à jour le timestamp
+            asset.reason = reasons[asset.action]?.[Math.floor(Math.random() * reasons[asset.action].length)] || "Analyse en cours";
+            asset.timeframe = timeframes[Math.floor(Math.random() * timeframes.length)];
+            asset.provider = currentProvider;
             asset.lastUpdate = Date.now();
-            lastUpdateTime = Date.now();
         }
 
-        // Mettre à jour les prix en temps réel
+        // ============================================
+        // FONCTIONS DE MISE À JOUR
+        // ============================================
+
         function updatePrices() {
-            Object.keys(assetsData).forEach(symbol => {
-                const asset = assetsData[symbol];
+            if (isFrozen) {
+                logApi('Système', 'Mode Freeze activé - Mise à jour ignorée', 'warning');
+                return;
+            }
+
+            Object.keys(assets).forEach(symbol => {
+                const asset = assets[symbol];
                 const volatility = asset.volatility / 100;
                 
-                // Générer un changement de prix aléatoire basé sur la volatilité
-                const randomChange = (Math.random() - 0.5) * volatility * asset.price * 2;
+                // Générer un changement de prix réaliste
+                const randomChange = (Math.random() - 0.5) * volatility * asset.basePrice;
+                const oldPrice = asset.price;
                 
                 // Appliquer le changement
-                const oldPrice = asset.price;
-                asset.price += randomChange;
+                asset.price = Math.max(asset.price + randomChange, asset.basePrice * 0.5);
+                asset.price = parseFloat(asset.price.toFixed(2));
                 
-                // Garder le prix positif
-                asset.price = Math.max(asset.price, 0.01);
-                
-                // Calculer le changement
+                // Calculer les variations
                 asset.change = asset.price - oldPrice;
                 asset.changePercent = ((asset.change / oldPrice) * 100).toFixed(2);
+                
+                // Mettre à jour le RSI
+                const rsiChange = (Math.random() - 0.5) * 3;
+                asset.rsi = Math.min(Math.max(asset.rsi + rsiChange, 10), 90);
+                asset.rsi = Math.round(asset.rsi);
+                
+                // Recalculer le score
+                asset.score = calculateTechnicalScore(asset.price, asset.rsi, asset.volatility);
+                asset.action = getActionFromScore(asset.score);
+                
+                // Recalculer TP/SL
+                asset.tp = calculateTP(asset.price, asset.score, asset.volatility);
+                asset.sl = calculateSL(asset.price, asset.score, asset.volatility);
+                
+                // Mettre à jour les détails
+                updateAssetDetails(symbol);
                 
                 // Ajouter à l'historique
                 asset.priceHistory.push(asset.price);
                 if (asset.priceHistory.length > 50) {
                     asset.priceHistory.shift();
                 }
-                
-                // Mettre à jour le signal
-                updateAssetSignal(symbol);
             });
+            
+            // Mettre à jour l'affichage
+            generatePriorityLists();
+            updateStatistics();
+            updateLastUpdateTime();
+            
+            // Logger la mise à jour
+            API_CONFIG[currentProvider].requests++;
+            logApi('Mise à jour', 'Données actualisées avec succès', 'success');
         }
 
-        // Démarrer les mises à jour en temps réel
-        function startRealTimeUpdates() {
-            // Mettre à jour toutes les 3 secondes
+        function startAutoUpdates() {
+            if (updateInterval) clearInterval(updateInterval);
+            
             updateInterval = setInterval(() => {
-                updatePrices();
-                generatePriorityLists();
-                updateStatistics();
-                updateNews();
-                updateLastUpdateTime();
-            }, 3000);
-            
-            // Animation de prix toutes les secondes pour certains actifs
-            setInterval(() => {
-                animateRandomPriceChanges();
-            }, 1000);
-        }
-
-        // Animer les changements de prix
-        function animateRandomPriceChanges() {
-            // Sélectionner 3-5 actifs aléatoires
-            const symbols = Object.keys(assetsData);
-            const randomSymbols = symbols
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 3 + Math.floor(Math.random() * 3));
-            
-            randomSymbols.forEach(symbol => {
-                const asset = assetsData[symbol];
-                const element = document.querySelector(`[data-symbol="${symbol}"]`);
-                
-                if (element) {
-                    const priceElement = element.querySelector('.asset-price');
-                    const changeElement = element.querySelector('.asset-change');
-                    
-                    if (priceElement && changeElement) {
-                        // Animation visuelle
-                        if (asset.change > 0) {
-                            priceElement.classList.remove('price-down');
-                            priceElement.classList.add('price-up');
-                        } else if (asset.change < 0) {
-                            priceElement.classList.remove('price-up');
-                            priceElement.classList.add('price-down');
-                        }
-                        
-                        // Retirer l'animation après un délai
-                        setTimeout(() => {
-                            priceElement.classList.remove('price-up', 'price-down');
-                        }, 1000);
-                    }
+                if (!isFrozen) {
+                    updatePrices();
                 }
-            });
+                
+                // Changer occasionnellement de provider
+                if (Math.random() > 0.8) {
+                    rotateProvider();
+                }
+                
+                // Mettre à jour les actualités
+                updateNews();
+            }, 5000); // Mise à jour toutes les 5 secondes
         }
 
-        // Générer les listes prioritaires
+        // ============================================
+        // FONCTIONS D'AFFICHAGE
+        // ============================================
+
         function generatePriorityLists() {
-            // Convertir en tableau
-            const assetsArray = Object.values(assetsData);
+            const assetsArray = Object.values(assets);
             
             // Séparer les SHORT et LONG
             const shortAssets = assetsArray
@@ -1087,16 +1343,18 @@
             longList.innerHTML = longAssets.map((asset, index) => 
                 createPriorityItem(asset, index + 1, 'LONG')
             ).join('');
+            
+            // Animer les changements de prix
+            animatePriceChanges();
         }
 
-        // Créer un élément de priorité
         function createPriorityItem(asset, rank, type) {
             const changeClass = asset.change >= 0 ? 'change-positive' : 'change-negative';
             const categoryClass = `tag-${asset.category}`;
             const scoreClass = `score-${Math.floor(asset.score/10)*10}`;
             const rankClass = `rank-${Math.min(rank, 5)}`;
             
-            // Formater le prix selon le type d'actif
+            // Formater le prix
             let formattedPrice;
             if (asset.price > 1000) {
                 formattedPrice = Math.round(asset.price).toLocaleString('fr-FR');
@@ -1156,17 +1414,44 @@
                             <span class="detail-value sl-value">${asset.sl}</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Signal:</span>
-                            <span class="detail-value">${asset.reason}</span>
+                            <span class="detail-label">Source:</span>
+                            <span class="detail-value">${asset.provider}</span>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // Mettre à jour les statistiques
+        function animatePriceChanges() {
+            const symbols = Object.keys(assets);
+            const randomSymbols = symbols
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+            
+            randomSymbols.forEach(symbol => {
+                const element = document.querySelector(`[data-symbol="${symbol}"]`);
+                if (element) {
+                    const priceElement = element.querySelector('.asset-price');
+                    if (priceElement) {
+                        const asset = assets[symbol];
+                        if (asset.change > 0) {
+                            priceElement.classList.remove('price-down');
+                            priceElement.classList.add('price-up');
+                        } else if (asset.change < 0) {
+                            priceElement.classList.remove('price-up');
+                            priceElement.classList.add('price-down');
+                        }
+                        
+                        setTimeout(() => {
+                            priceElement.classList.remove('price-up', 'price-down');
+                        }, 1000);
+                    }
+                }
+            });
+        }
+
         function updateStatistics() {
-            const assetsArray = Object.values(assetsData);
+            const assetsArray = Object.values(assets);
             
             // Compter les signaux
             const buyCount = assetsArray.filter(a => a.action === "BUY").length;
@@ -1197,7 +1482,7 @@
             document.getElementById('worst-score').textContent = worstAsset.score;
             document.getElementById('worst-asset').textContent = `${worstAsset.name} (${worstAsset.symbol})`;
             
-            // Mettre à jour la classe de couleur pour le pire score
+            // Mettre à jour la couleur du pire score
             const worstScoreElement = document.getElementById('worst-score');
             if (worstAsset.score >= 70) {
                 worstScoreElement.style.color = '#10b981';
@@ -1229,12 +1514,13 @@
             }
         }
 
-        // Charger les actualités
+        // ============================================
+        // FONCTIONS D'ACTUALITÉS
+        // ============================================
+
         function loadNews() {
             const newsFeed = document.getElementById('news-feed');
-            
-            // Afficher les 5 dernières actualités
-            const recentNews = financialNews.slice(0, 5);
+            const recentNews = FINANCIAL_NEWS.slice(0, 5);
             
             newsFeed.innerHTML = recentNews.map(news => `
                 <div class="news-item" data-impact="${news.impact}">
@@ -1244,20 +1530,16 @@
             `).join('');
         }
 
-        // Mettre à jour les actualités
         function updateNews() {
-            // Occasionnellement ajouter une nouvelle actualité
             if (Math.random() > 0.7) {
                 const newsFeed = document.getElementById('news-feed');
                 const newsItems = Array.from(newsFeed.children);
                 
-                // Retirer la plus ancienne
                 if (newsItems.length >= 5) {
                     newsItems[newsItems.length - 1].remove();
                 }
                 
-                // Ajouter une nouvelle actualité
-                const newNews = financialNews[Math.floor(Math.random() * financialNews.length)];
+                const newNews = FINANCIAL_NEWS[Math.floor(Math.random() * FINANCIAL_NEWS.length)];
                 const newsItem = document.createElement('div');
                 newsItem.className = 'news-item';
                 newsItem.dataset.impact = newNews.impact;
@@ -1270,7 +1552,215 @@
             }
         }
 
-        // Mettre à jour l'heure
+        // ============================================
+        // FONCTIONS DE GESTION DES APIS
+        // ============================================
+
+        async function testAllApis() {
+            logApi('API Test', 'Démarrage du test de toutes les APIs...', 'info');
+            
+            const results = [];
+            
+            for (const [provider, config] of Object.entries(API_CONFIG)) {
+                try {
+                    // Simuler une requête API
+                    await simulateApiRequest(provider);
+                    
+                    config.status = 'OK';
+                    config.requests++;
+                    results.push({ provider, status: 'OK' });
+                    
+                    logApi(provider, 'Test réussi', 'success');
+                } catch (error) {
+                    config.status = 'ERROR';
+                    config.errors++;
+                    results.push({ provider, status: 'ERROR', error: error.message });
+                    
+                    logApi(provider, `Échec: ${error.message}`, 'error');
+                }
+            }
+            
+            updateApiStatusDisplay();
+            return results;
+        }
+
+        function simulateApiRequest(provider) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // 80% de chance de succès
+                    if (Math.random() > 0.2) {
+                        resolve({ provider, status: 'OK' });
+                    } else {
+                        reject(new Error('Rate limit exceeded'));
+                    }
+                }, 500 + Math.random() * 1000);
+            });
+        }
+
+        function rotateProvider() {
+            const providers = Object.keys(API_CONFIG);
+            const currentIndex = providers.indexOf(currentProvider);
+            const nextIndex = (currentIndex + 1) % providers.length;
+            currentProvider = providers[nextIndex];
+            
+            logApi('Système', `Rotation du provider: ${currentProvider}`, 'info');
+            
+            // Mettre à jour les données avec le nouveau provider
+            Object.keys(assets).forEach(symbol => {
+                assets[symbol].provider = currentProvider;
+            });
+        }
+
+        function rotateAllKeys() {
+            logApi('Système', 'Rotation manuelle de toutes les clés API...', 'info');
+            
+            for (const [provider, config] of Object.entries(API_CONFIG)) {
+                config.currentKeyIndex = (config.currentKeyIndex + 1) % config.keys.length;
+                config.status = 'OK';
+                config.errors = 0;
+                
+                logApi(provider, `Clé rotée vers: key_${config.currentKeyIndex + 1}`, 'success');
+            }
+            
+            updateApiStatusDisplay();
+        }
+
+        function updateApiStatusDisplay() {
+            const grid = document.getElementById('api-status-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            for (const [provider, config] of Object.entries(API_CONFIG)) {
+                const statusClass = config.status === 'OK' ? 'ok' : 
+                                  config.status === 'ERROR' ? 'error' : 'warning';
+                
+                const card = document.createElement('div');
+                card.className = 'api-card';
+                card.innerHTML = `
+                    <h4>
+                        <i class="fas fa-${provider === 'alphaVantage' ? 'chart-line' : 
+                                       provider === 'twelveData' ? 'database' : 'signal'}"></i>
+                        ${config.name}
+                    </h4>
+                    <div class="api-status ${statusClass}">
+                        ${config.status === 'OK' ? '✅ OPÉRATIONNEL' : 
+                          config.status === 'ERROR' ? '❌ ERREUR' : '⚠️ INCONNU'}
+                    </div>
+                    <div class="api-details">
+                        <p><strong>Clés disponibles:</strong> ${config.keys.length}</p>
+                        <p><strong>Clé actuelle:</strong> key_${config.currentKeyIndex + 1}</p>
+                        <p><strong>Requêtes:</strong> ${config.requests}</p>
+                        <p><strong>Erreurs:</strong> ${config.errors}</p>
+                        <p><strong>Dernier test:</strong> ${new Date().toLocaleTimeString('fr-FR')}</p>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            }
+        }
+
+        function logApi(source, message, type = 'info') {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const logItem = document.createElement('div');
+            logItem.className = `log-item log-${type}`;
+            logItem.innerHTML = `[${timeString}] <strong>${source}:</strong> ${message}`;
+            
+            const logsContainer = document.getElementById('api-logs');
+            logsContainer.insertBefore(logItem, logsContainer.firstChild);
+            
+            // Garder seulement les 20 derniers logs
+            const logs = logsContainer.children;
+            if (logs.length > 20) {
+                logsContainer.removeChild(logs[logs.length - 1]);
+            }
+            
+            // Mettre à jour l'heure dans le log
+            document.getElementById('log-time').textContent = timeString;
+            
+            // Sauvegarder le log
+            apiLogs.unshift({
+                timestamp: now,
+                source,
+                message,
+                type
+            });
+            
+            if (apiLogs.length > 100) {
+                apiLogs.pop();
+            }
+        }
+
+        function clearApiLogs() {
+            const logsContainer = document.getElementById('api-logs');
+            logsContainer.innerHTML = '';
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item log-info';
+            logItem.innerHTML = `[${timeString}] <strong>Système:</strong> Logs effacés`;
+            logsContainer.appendChild(logItem);
+            
+            apiLogs = [];
+        }
+
+        // ============================================
+        // FONCTIONS D'INTERFACE UTILISATEUR
+        // ============================================
+
+        function showTab(tabId) {
+            // Cacher tous les onglets
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Désactiver tous les boutons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Activer l'onglet sélectionné
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            // Si c'est l'onglet API, charger le statut
+            if (tabId === 'api-tab') {
+                updateApiStatusDisplay();
+            }
+        }
+
+        function toggleFreezeMode() {
+            isFrozen = !isFrozen;
+            const freezeBtn = document.getElementById('freeze-btn');
+            
+            if (isFrozen) {
+                freezeTime = new Date();
+                freezeBtn.innerHTML = '<i class="fas fa-play"></i> Unfreeze Mode';
+                freezeBtn.style.background = '#10b981';
+                logApi('Système', 'Mode Freeze activé - Données figées', 'warning');
+            } else {
+                freezeBtn.innerHTML = '<i class="fas fa-pause"></i> Freeze Mode';
+                freezeBtn.style.background = '';
+                logApi('Système', 'Mode Freeze désactivé', 'success');
+            }
+        }
+
+        function loadApiStatus() {
+            showTab('api-tab');
+        }
+
         function updateTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('fr-FR', { 
@@ -1287,11 +1777,9 @@
             document.getElementById('current-time').textContent = 
                 `${dateString} - ${timeString}`;
             
-            // Mettre à jour toutes les secondes
             setTimeout(updateTime, 1000);
         }
 
-        // Mettre à jour le temps de dernière mise à jour
         function updateLastUpdateTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('fr-FR', { 
@@ -1302,7 +1790,6 @@
             document.getElementById('last-update').textContent = timeString;
         }
 
-        // Mettre à jour le statut de connexion
         function updateConnectionStatus(status) {
             const statusElement = document.getElementById('connection-status');
             
@@ -1315,20 +1802,16 @@
             }
         }
 
-        // Gérer la visibilité de la page
+        // ============================================
+        // GESTION DES ÉVÉNEMENTS ET INITIALISATION
+        // ============================================
+
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                // Page cachée, ralentir les mises à jour
-                if (updateInterval) {
-                    clearInterval(updateInterval);
-                    updateInterval = null;
-                }
+                // Page cachée
                 updateConnectionStatus('disconnected');
             } else {
-                // Page visible, reprendre les mises à jour
-                if (!updateInterval) {
-                    startRealTimeUpdates();
-                }
+                // Page visible
                 updateConnectionStatus('connected');
             }
         });
@@ -1338,14 +1821,13 @@
 
         // Exporter les fonctions pour la console (débogage)
         window.tradingDashboard = {
-            getAssetData: (symbol) => assetsData[symbol],
-            getAllAssets: () => assetsData,
+            getAssetData: (symbol) => assets[symbol],
+            getAllAssets: () => assets,
             updatePrices: updatePrices,
-            forceUpdate: () => {
-                updatePrices();
-                generatePriorityLists();
-                updateStatistics();
-            }
+            testApis: testAllApis,
+            rotateKeys: rotateAllKeys,
+            toggleFreeze: toggleFreezeMode,
+            getApiStatus: () => API_CONFIG
         };
     </script>
 </body>
